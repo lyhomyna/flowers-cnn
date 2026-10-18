@@ -13,8 +13,18 @@ class FlowerCNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
 
-            # 2nd Conv block
+            # 2nd conv block
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            # 3rd conv block
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            # 4th conv block
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
@@ -22,10 +32,10 @@ class FlowerCNN(nn.Module):
         # Classification
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            # the input size 32 * 32 * 32 assumes input images are resized to 128
-            # 128 -> (MaxPool1) -> 64 -> (MaxPool2) -> 32
-            # 32 channels * 32 height * 32 width
-            nn.Linear(32 * 32 * 32, 128),
+            # the input size 128 * 8 * 8 assumes input images are resized to 128
+            # 128 -> (MaxPool1) -> 64 -> (MaxPool2) -> 32 -> (MaxPool3) -> 16 -> (MaxPool4) -> 8
+            # 128 channels * 8 height * 8 width
+            nn.Linear(128 * 8 * 8, 128),
             nn.ReLU(),
             # output layer: 5 classes (softmax handled by loss function)
             nn.Linear(128, num_classes)
@@ -49,12 +59,20 @@ class FlowerCNNDropout(nn.Module):
 
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
             nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(32 * 32 * 32, 128),
+            nn.Linear(128 * 8 * 8, 128),
             nn.ReLU(),
             nn.Dropout(p=dropout_p),
             nn.Linear(128, num_classes)
@@ -80,12 +98,22 @@ class FlowerCNNBatchNorm(nn.Module):
             nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(32 * 32 * 32, 128),
+            nn.Linear(128 * 8 * 8, 128),
             nn.ReLU(),
             nn.Linear(128, num_classes)
         )
@@ -94,4 +122,3 @@ class FlowerCNNBatchNorm(nn.Module):
         x = self.features(x)
         x = self.classifier(x)
         return x
-

@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import random
 import data_prep
@@ -9,6 +10,12 @@ sys.stdout.reconfigure(encoding="utf-8")
 input_folder = "input_folder"
 output_folder = "output_folder"
 random.seed(111)
+
+# output_folder переписується (не домальовується) при кожному запуску, щоб
+# старі train/val/test файли з попереднього спліту не лишались на диску і
+# не призводили до перетину train/test між прогонами (data leakage).
+if os.path.exists(output_folder):
+    shutil.rmtree(output_folder)
 
 data_prep.download_dataset(input_folder)
 # data_prep.create_subset_dataset(input_folder)

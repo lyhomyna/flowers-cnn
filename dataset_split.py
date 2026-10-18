@@ -5,13 +5,33 @@ from PIL import Image, ImageEnhance, ImageFilter
 
 IMG_SIZE = (128, 128)
 
+def random_crop(img):
+    """Випадковий кроп 80-95% площі зображення з наступним ресайзом назад до IMG_SIZE."""
+    w, h = img.size
+    scale = random.uniform(0.8, 0.95)
+    crop_w, crop_h = int(w * scale), int(h * scale)
+    left = random.randint(0, w - crop_w)
+    top = random.randint(0, h - crop_h)
+    return img.crop((left, top, left + crop_w, top + crop_h))
+
+def hue_shift(img):
+    """Зсув каналу Hue в HSV-просторі (справжня зміна кольору, на відміну від 'jitter')."""
+    h, s, v = img.convert('HSV').split()
+    h_arr = np.array(h).astype(np.int16)
+    h_arr = (h_arr + random.randint(-30, 30)) % 256
+    h = Image.fromarray(h_arr.astype(np.uint8), mode='L')
+    return Image.merge('HSV', (h, s, v)).convert('RGB')
+
 def augment_image(img):
     augmentations = {
         'h_flip': img.transpose(Image.FLIP_LEFT_RIGHT),
+        'v_flip': img.transpose(Image.FLIP_TOP_BOTTOM),
         'rotate': img.rotate(random.uniform(-30, 30), expand=True, fillcolor=(255,255,255)),
         'bright': ImageEnhance.Contrast(ImageEnhance.Brightness(img).enhance(random.uniform(0.5, 2.0))).enhance(random.uniform(0.5, 2.0)),
         'noise': Image.fromarray(np.clip(np.array(img) + np.random.normal(0, 25, np.array(img).shape), 0, 255).astype(np.uint8)),
         'jitter': Image.fromarray(np.array(img.convert('HSV').convert('RGB'))),
+        'hue': hue_shift(img),
+        'crop': random_crop(img),
         'blur': img.filter(ImageFilter.GaussianBlur(random.uniform(0.5, 1)))
     }
     return augmentations

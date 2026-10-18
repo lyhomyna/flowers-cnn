@@ -12,7 +12,7 @@ from model import FlowerCNN, FlowerCNNDropout, FlowerCNNBatchNorm
 output_folder = "output_folder"
 plots_folder = "plots"
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 EPOCHS = 15
 LEARNING_RATE = 1e-3
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
